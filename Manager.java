@@ -21,7 +21,7 @@ public class Manager extends UnicastRemoteObject implements ManagerInterface {
     Mapper mapper = null;
     try {
       mapper = new Mapper();
-      System.out.println("Map task created");
+      // System.out.println("Map task created");
     } catch (RemoteException e) {
       System.out.println(e.toString());
     }
@@ -32,7 +32,7 @@ public class Manager extends UnicastRemoteObject implements ManagerInterface {
     Reducer reducer = null;
     try {
       reducer = new Reducer(key, master);
-      System.out.println("Reduce task created");
+      // System.out.println("Reduce task created");
     } catch (RemoteException e) {
       System.out.println(e.toString());
     }

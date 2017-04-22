@@ -19,6 +19,14 @@ public class Mapper extends UnicastRemoteObject implements MapperInterface {
     freq = new Hashtable<String, Integer>();
   }
 
+  public int getCount(String key) {
+    if (freq.containsKey(key)) {
+      return freq.get(key);
+    } else {
+      return 0;
+    }
+  }
+
   public void processInput(String input, MasterInterface master) {
     String[] split = input.toLowerCase().replaceAll("[^a-zA-Z\\s]", "").split("\\s");
     for (int i = 0; i < split.length; i++) {
@@ -33,7 +41,7 @@ public class Mapper extends UnicastRemoteObject implements MapperInterface {
     Set<String> keySet = freq.keySet();
     String[] keys = keySet.toArray(new String[keySet.size()]);
     try {
-      master.markMapperDone(this);
+      master.markMapperDone(this, keys);
       System.out.println("Map task done");
     } catch (Exception e) {
       System.err.println("Failed to get or send to reducers: " + e.toString());
