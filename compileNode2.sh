@@ -1,2 +1,2 @@
 javac -d . MasterInterface.java ManagerInterface.java MapperInterface.java ReducerInterface.java Master.java Manager.java Mapper.java Reducer.java
-java -classpath . -Djava.rmi.server.codebase=file:./ hadoop.Mapper 8002
+java -classpath . -Djava.rmi.server.codebase=file:./ hadoop.Manager 8002

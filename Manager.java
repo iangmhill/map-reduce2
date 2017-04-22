@@ -10,18 +10,23 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import java.util.Hashtable;
-import java.util.Set;
+import java.util.ArrayList;
 
 public class Manager extends UnicastRemoteObject implements ManagerInterface {
-
+  private ArrayList<Reducer> reducers;
+  private ArrayList<Mapper> mappers;
+  private int pingsInProgress = 0;
   public Manager() throws RemoteException {
+    mappers = new ArrayList<Mapper>();
+    reducers = new ArrayList<Reducer>();
   }
 
   public MapperInterface createMapTask() {
     Mapper mapper = null;
     try {
       mapper = new Mapper();
-      // System.out.println("Map task created");
+      mappers.add(mapper);
+      System.out.println("Map task created");
     } catch (RemoteException e) {
       System.out.println(e.toString());
     }
@@ -32,7 +37,8 @@ public class Manager extends UnicastRemoteObject implements ManagerInterface {
     Reducer reducer = null;
     try {
       reducer = new Reducer(key, master);
-      // System.out.println("Reduce task created");
+      reducers.add(reducer);
+      System.out.println("Reduce task created");
     } catch (RemoteException e) {
       System.out.println(e.toString());
     }

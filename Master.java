@@ -19,11 +19,10 @@ import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class Master extends UnicastRemoteObject implements MasterInterface {
   private static Hashtable<String, ManagerInterface> nodeDirectory;
-  // private static Hashtable<String, iMapper> mapperDirectory;
-  // private static Hashtable<String, iReducer> reducerDirectory;
   private static String[] nodeIds;
   private static Master master;
   private Hashtable<String, ReducerInterface> reducerMapping;
@@ -34,10 +33,12 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
   private boolean fileRead = false;
   private BufferedWriter bw;
   private ArrayList<MapperInterface> completedMappers;
+  private HashSet<String> reducersCreated;
 
   public Master() throws RemoteException {
     reducerMapping = new Hashtable<String, ReducerInterface>();
     completedMappers = new ArrayList<MapperInterface>();
+    reducersCreated = new HashSet<String>();
   }
 
   public MapperInterface[] getMappers(ReducerInterface reducer, int index) {
@@ -56,16 +57,17 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
     mapperTasksRunning -= 1;
     completedMappers.add(mapper);
     for (int i = 0; i < keys.length; i++) {
-      if (!reducerMapping.containsKey(keys[i])) {
+      if (!reducersCreated.contains(keys[i])) {
+        reducersCreated.add(keys[i]);
+        reducerTasksRunning++;
+        System.out.println("Reducer started: " + Integer.toString(reducerTasksRunning) + " running");
         try {
           ReducerInterface reducer = nodeDirectory
               .get(nodeIds[nextReducerIndex])
               .createReduceTask(keys[i], master);
           reducer.start();
           reducerMapping.put(keys[i], reducer);
-          reducerTasksRunning++;
-          System.out.println("Reducer started: " + Integer.toString(reducerTasksRunning) + " running");
-          nextReducerIndex++;
+                    nextReducerIndex++;
           if (nextReducerIndex >= nodeIds.length) {
             nextReducerIndex = 0;
           }
@@ -78,14 +80,15 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
   }
 
   public void receiveOutput(String key, int value) {
-    reducerTasksRunning--;
-    System.out.println("Reducer completed: " + Integer.toString(reducerTasksRunning) + " running");
+
     try {
       if (bw == null) {
         bw = new BufferedWriter(new FileWriter("output.txt"));
         System.out.println("Opened file");
       }
       bw.write(key + ": " + value + "\n");
+      reducerTasksRunning--;
+      System.out.println("Reducer completed: " + Integer.toString(reducerTasksRunning) + " running");
       if (reducerTasksRunning == 0 && fileRead) {
         bw.close();
         System.out.println("Closed file");

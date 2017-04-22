@@ -21,23 +21,24 @@ public class Reducer extends UnicastRemoteObject implements ReducerInterface {
   private boolean mappersDone;
   private long DELAY = 1000;
   private Timer timer;
+  private TimerTask timerTask;
 
   public Reducer(String key, MasterInterface master) throws RemoteException {
     word = key;
     value = 0;
     masterNode = master;
     mapperIndex = 0;
-    mappersDone = false;
     timer = new Timer();
-  }
-
-  public void start() {
-    timer.schedule(new TimerTask() {
+    timerTask = new TimerTask() {
       @Override
       public void run() {
         pingMaster();
       }
-    }, DELAY);
+    };
+  }
+
+  public void start() {
+    timer.schedule(timerTask, 0, DELAY);
   }
 
   public void pingMaster() {
@@ -52,23 +53,15 @@ public class Reducer extends UnicastRemoteObject implements ReducerInterface {
       System.err.println("Failed to get mappers: " + e.toString());
       e.printStackTrace();
     }
-    if (!mappersDone) {
-      timer.schedule(new TimerTask() {
-        @Override
-        public void run() {
-          pingMaster();
-        }
-      }, DELAY);
-    }
   }
 
   public void terminate() {
-    mappersDone = true;
     try {
       this.masterNode.receiveOutput(word, this.value);
-      // System.out.println("Reduce task terminated");
+      System.out.println("Reduce task terminated");
     } catch (RemoteException e) {
       System.out.println(e.toString());
     }
+    timerTask.cancel();
   }
 }
