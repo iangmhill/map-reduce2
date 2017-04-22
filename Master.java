@@ -25,7 +25,6 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
   private static Hashtable<String, ManagerInterface> nodeDirectory;
   private static String[] nodeIds;
   private static Master master;
-  private Hashtable<String, ReducerInterface> reducerMapping;
   private int nextMapperIndex = 0;
   private int nextReducerIndex = 0;
   private int mapperTasksRunning = 0;
@@ -36,7 +35,6 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
   private HashSet<String> reducersCreated;
 
   public Master() throws RemoteException {
-    reducerMapping = new Hashtable<String, ReducerInterface>();
     completedMappers = new ArrayList<MapperInterface>();
     reducersCreated = new HashSet<String>();
   }
@@ -66,8 +64,7 @@ public class Master extends UnicastRemoteObject implements MasterInterface {
               .get(nodeIds[nextReducerIndex])
               .createReduceTask(keys[i], master);
           reducer.start();
-          reducerMapping.put(keys[i], reducer);
-                    nextReducerIndex++;
+          nextReducerIndex++;
           if (nextReducerIndex >= nodeIds.length) {
             nextReducerIndex = 0;
           }

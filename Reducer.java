@@ -18,7 +18,6 @@ public class Reducer extends UnicastRemoteObject implements ReducerInterface {
   private int value;
   private MasterInterface masterNode;
   private int mapperIndex;
-  private boolean mappersDone;
   private long DELAY = 1000;
   private Timer timer;
   private TimerTask timerTask;
